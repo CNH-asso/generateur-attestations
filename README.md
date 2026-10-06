@@ -1,19 +1,32 @@
 # Découpe d'attestations — CNH
 
-Petite application **100 % locale** (rien n'est envoyé sur internet) qui découpe un
-gros PDF d'attestations (1 attestation par page) en **un PDF par personne**, rangés
-par **créneau**, le tout dans un fichier **.zip**.
+Petite application qui découpe un gros PDF d'attestations (1 attestation par page)
+en **un PDF par personne**, rangés par **créneau** (ou par activité), le tout dans
+un fichier **.zip**.
+
+👉 **Accessible en ligne : <https://cnh-asso.github.io/generateur-attestations/>**
+
+Tout le traitement se fait **dans votre navigateur** : le PDF déposé n'est jamais
+envoyé sur internet, même en utilisant la version en ligne.
 
 ## Utilisation
 
-1. Ouvrez **`index.html`** dans un navigateur (double-clic sur le fichier suffit).
+1. Ouvrez **<https://cnh-asso.github.io/generateur-attestations/>** dans un navigateur.
 2. Glissez-déposez le gros PDF (ou cliquez pour le choisir).
 3. Vérifiez l'aperçu (nombre d'attestations, créneaux détectés).
 4. Cliquez sur **« Exporter le .zip »** → le fichier `attestations_decoupees.zip`
    se télécharge.
 
-> 💡 Pour la plus belle mise en forme, une connexion internet charge les polices.
-> Sans connexion, l'application reste **pleinement fonctionnelle** (polices système).
+### Sans connexion internet
+
+L'application fonctionne aussi hors-ligne : téléchargez le dépôt (bouton
+**Code → Download ZIP** sur GitHub), décompressez-le, puis ouvrez **`index.html`**
+par un double-clic. Seules les polices d'écriture diffèrent (polices système).
+
+## Mise en ligne
+
+Le site est publié par **GitHub Pages** à partir de la branche `main` : toute
+modification poussée sur `main` est en ligne une à deux minutes plus tard.
 
 ## Ce qui est produit
 
