@@ -44,16 +44,20 @@ const els = {
 //  Analyse du texte d'une attestation
 // =====================================================================
 
-// Nom = texte juste avant « , inscrit(e) à l'activité : <activité> (créneau <n>) ».
+// Nom = texte juste avant « inscrit(e) à l'activité : <activité> », l'activité
+// s'arrêtant à la fin de la ligne. Deux modèles sont gérés :
+//   « Prénom NOM, inscrite à l'activité : Aquagym (créneau 101) »
+//   « Prénom NOM est inscrite à l'activité : Natation adulte » (sans créneau)
 const ATTEST_RE =
-  /:\s*([^:]+?)\s*,?\s*inscrite?\s+à\s*l'activité\s*:\s*(.+?)\s*\(\s*créneau\s*(\d+)\s*\)/i;
+  /:\s*([^:]+?)\s*,?\s*(?:est\s+)?inscrite?\s+à\s*l'activité\s*:\s*([^\n]+?)\s*(?:\(\s*créneau\s*(\d+)\s*\))?\s*?(?:\n|$)/i;
 
 function normalize(text) {
   return text
     .replace(/[’‘‛′`]/g, "'")   // apostrophes typographiques -> simple
     .replace(/[·•]/g, '')        // points médians (« représentant·e »)
     .replace(/ /g, ' ')     // espaces insécables
-    .replace(/\s+/g, ' ')        // espaces multiples -> simple
+    .replace(/[^\S\n]+/g, ' ')   // espaces multiples -> simple (lignes conservées)
+    .replace(/ *\n */g, '\n')
     .replace(/ *- */g, '-')      // « Jean - michel » -> « Jean-michel »
     .trim();
 }
@@ -89,7 +93,8 @@ function sanitize(s) {
 }
 
 function buildFolder(activity, creneau) {
-  return sanitize(`${creneau}_${activity}`).replace(/\s+/g, '_');
+  const name = creneau ? `${creneau}_${activity}` : activity;
+  return sanitize(name).replace(/\s+/g, '_');
 }
 
 function buildFileBase(prenom, nom) {
@@ -110,7 +115,7 @@ function parsePage(rawText, pageNumber) {
   }
   const { prenom, nom } = splitName(m[1].trim());
   const activity = m[2].trim();
-  const creneau = m[3];
+  const creneau = m[3] || ''; // absent du nouveau modèle
   return {
     page: pageNumber, ok: true,
     prenom, nom, activity, creneau,
@@ -147,7 +152,8 @@ async function analyze(arrayBuffer) {
   for (let i = 1; i <= total; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    const raw = content.items.map((it) => it.str).join(' ');
+    // Les fins de ligne sont conservées : elles délimitent le nom de l'activité.
+    const raw = content.items.map((it) => it.str + (it.hasEOL ? '\n' : ' ')).join('');
     entries.push(parsePage(raw, i));
     page.cleanup();
     setParseProgress(i / total, `Lecture de la page ${i} / ${total}…`);
@@ -209,14 +215,15 @@ function colorFor(activity) {
 function render() {
   const ok = state.entries.filter((e) => e.ok);
   const bad = state.entries.filter((e) => !e.ok);
-  const creneaux = new Set(ok.map((e) => e.creneau));
+  const dossiers = new Set(ok.map((e) => e.folder));
+  const avecCreneau = ok.some((e) => e.creneau);
 
   // Statistiques
   els.stats.innerHTML = '';
   [
     [state.entries.length, 'pages lues'],
     [ok.length, 'attestations reconnues'],
-    [creneaux.size, 'créneaux'],
+    [dossiers.size, avecCreneau ? 'créneaux' : 'activités'],
   ].forEach(([num, label]) => {
     const d = document.createElement('div');
     d.className = 'stat';
@@ -250,7 +257,7 @@ function render() {
     const list = groups.get(folder);
     const sample = list.find((e) => e.ok) || list[0];
     const color = sample.ok ? colorFor(sample.activity) : DEFAULT_COLOR;
-    const chipLabel = sample.ok ? sample.creneau : '!';
+    const chipLabel = sample.ok ? (sample.creneau || sample.activity.charAt(0).toUpperCase()) : '!';
 
     const g = document.createElement('div');
     g.className = 'group';

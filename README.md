@@ -30,6 +30,8 @@ attestations_decoupees.zip
 ### Règles de nommage
 
 - **Dossier** = `numéroDeCréneau_NomDuCréneau` (ex. `105_Natation_enfant`).
+  Si l'attestation ne mentionne pas de créneau, le dossier porte le seul nom de
+  l'activité (ex. `Natation_adulte`).
 - **Fichier** = `Prénom_NOM.pdf`.
   - Prénom en *Capitale* (`jean-michel` → `Jean-Michel`).
   - NOM laissé en MAJUSCULES, espaces → tirets (`LE GOFF` → `LE-GOFF`).
@@ -38,8 +40,10 @@ attestations_decoupees.zip
 
 ### Comment le nom est repéré
 
-Le texte recherché est celui juste avant
-« *, inscrit(e) à l'activité : … (créneau …)* ». Cela gère :
+Le texte recherché est celui juste avant « *inscrit(e) à l'activité : …* », avec
+ou sans « *(créneau …)* » en fin de ligne. Les deux modèles sont reconnus :
+« *Prénom NOM, inscrite à l'activité : Aquagym (créneau 101)* » et
+« *Prénom NOM est inscrite à l'activité : Natation adulte* ». Cela gère :
 
 - les attestations **adultes** (« certifie que : Prénom NOM ») ;
 - les attestations **enfants** (« … représentant·e légal·e de l'enfant : Prénom NOM ») ;
